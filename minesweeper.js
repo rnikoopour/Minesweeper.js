@@ -6,9 +6,10 @@ const prompt = readline.createInterface({
     output: process.stdout
 });
 
-const numRows = 5;
-const numCols = 5;
-const numMines = 3;
+// Accept dimension and mine count as arguements
+const numRows = process.argv[2];
+const numCols = process.argv[3];
+const numMines = process.argv[4];
 
 function createCell(row, col) {
     return {
