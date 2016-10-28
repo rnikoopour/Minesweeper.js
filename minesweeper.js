@@ -99,6 +99,7 @@ function countTouching(board, cell) {
 }
 
 function displayBoard(board) {
+    console.log();
     board.forEach((row) => {
 	let curRow = '';
 	row.forEach((cell) => {
