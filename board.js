@@ -39,10 +39,7 @@ function createBoard(numRows, numCols, numMines) {
 }
 
 function plantMines(numMines) {
-    let row;
-    let col;
     let cell;
-
     function addMine() {
 	let added = false;
 	if (!cell.isMine) {
@@ -53,8 +50,8 @@ function plantMines(numMines) {
     }
 
     while (numMines) {
-	row = Math.floor((Math.random() * boardInfo.numRows));
-	col = Math.floor((Math.random() * boardInfo.numCols));
+	const row = Math.floor((Math.random() * boardInfo.numRows));
+	const col = Math.floor((Math.random() * boardInfo.numCols));
 	cell = board[row][col];
 	const wasAdded = addMine();
 	if (wasAdded) numMines--;

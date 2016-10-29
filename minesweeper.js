@@ -5,16 +5,23 @@ let board = require('./board');
 
 board.createBoard();
 
+let gameSocket;
 let server = net.createServer((socket) => {
+    gameSocket = socket;
     socket.setEncoding('UTF-8');
     socket.on('data', (data) => {
-	if (data.trim() == 'display') board.display();
+	console.log('received:', data);
 	try {
 	    const message = JSON.parse(data);
 	    const response = handleMessage(message);
-	    socket.write(JSON.stringify(response));
+	    if (response) {
+		console.log('sending:', response);
+		socket.write(response);
+	    }
 	} catch (e) {
-	    socket.write('Unexpected Message: ' + data);
+	    console.log('Unexpected Data: ' + data);
+	    console.log(e);
+	    process.exit();
 	}
     });
 });
@@ -23,7 +30,7 @@ server.listen(2000, () => {
     console.log(server.address());
 });
 
-function handleMessage(message) {
+function processMessage(message) {
     const msgType = message.type;
     switch(msgType) {
     case 'reveal': {
@@ -41,12 +48,44 @@ function handleMessage(message) {
 	break;
     }
     }
-    board.display();
+    const response = createResponse();
+    return response;
+}
+
+function createResponse() {
     const obfuscatedBoard = board.getObfuscatedBoard();
     const boardState = board.getState();
     const response = {
 	boardState,
 	board: obfuscatedBoard
     }
-    return response
+    return JSON.stringify(response);
+}
+
+function handleMessage(message) {
+    let response;
+    if (message.type) response = processMessage(message);
+    else response = processCommand(message);
+    return response;
+}
+
+function processCommand(command) {
+    let response;
+    switch(command) {
+    case 'sendBoard': {
+	response = createResponse();
+	break;
+    }
+    case 'display': {
+	console.log('----- board state -----');
+	board.display();
+	console.log('-----------------------');
+	break;
+    }
+    default: {
+	console.log('Bad Command:', command);
+	break;
+    }
+    }
+    return response;
 }
