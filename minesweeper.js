@@ -12,9 +12,13 @@ let server = net.createServer((socket) => {
     socket.on('data', (data) => {
 	console.log('received:', data);
 	try {
-	    const message = JSON.parse(data);
-	    const response = handleMessage(message);
-	    if (response) {
+	    let shouldRespond = false;
+	    const requests = JSON.parse(data);
+	    requests.forEach((request) => {
+		shouldRespond |= request.type ? handleRequest(request) : processCommand(request);
+	    });
+	    if (shouldRespond) {
+		const response = createResponse();
 		console.log('sending:', response);
 		socket.write(response);
 	    }
@@ -30,17 +34,14 @@ server.listen(2000, () => {
     console.log(server.address());
 });
 
-function processMessage(message) {
-    const msgType = message.type;
-    switch(msgType) {
+function processMessage({type, contents}) {
+    switch(type) {
     case 'reveal': {
-	const {row, col} = message.contents;
-	board.revealCell(row, col);
+	board.revealCell(contents);
 	break;
     }
     case 'toggleFlag': {
-	const {row, col} = message.contents;
-	board.toggleCellFlag(row, col);
+	board.toggleCellFlag(contents);
 	break;
     }
     default: {
@@ -48,8 +49,8 @@ function processMessage(message) {
 	break;
     }
     }
-    const response = createResponse();
-    return response;
+    const shouldRespond = true;
+    return shouldRespond;
 }
 
 function createResponse() {
@@ -62,7 +63,7 @@ function createResponse() {
     return JSON.stringify(response);
 }
 
-function handleMessage(message) {
+function handleRequest(message) {
     let response;
     if (message.type) response = processMessage(message);
     else response = processCommand(message);
@@ -70,10 +71,10 @@ function handleMessage(message) {
 }
 
 function processCommand(command) {
-    let response;
+    let shouldRespond = false;;
     switch(command) {
     case 'sendBoard': {
-	response = createResponse();
+	shouldRespond = true;
 	break;
     }
     case 'display': {
@@ -87,5 +88,5 @@ function processCommand(command) {
 	break;
     }
     }
-    return response;
+    return shouldRespond;
 }
