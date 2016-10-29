@@ -8,6 +8,7 @@ board.createBoard();
 let server = net.createServer((socket) => {
     socket.setEncoding('UTF-8');
     socket.on('data', (data) => {
+	if (data.trim() == 'display') board.display();
 	try {
 	    const message = JSON.parse(data);
 	    const response = handleMessage(message);
@@ -24,22 +25,28 @@ server.listen(2000, () => {
 
 function handleMessage(message) {
     const msgType = message.type;
-    let response;
     switch(msgType) {
-    case 'reveal':
+    case 'reveal': {
 	const {row, col} = message.contents;
 	board.revealCell(row, col);
-	board.display();
-	const obfuscatedBoard = board.getObfuscatedBoard();
-	const boardState = board.getState();
-	response = {
-	    boardState,
-	    board: obfuscatedBoard
-	}
 	break;
-    default:
+    }
+    case 'toggleFlag': {
+	const {row, col} = message.contents;
+	board.toggleCellFlag(row, col);
+	break;
+    }
+    default: {
 	console.log('Bad Message Type:', msgType);
 	break;
+    }
+    }
+    board.display();
+    const obfuscatedBoard = board.getObfuscatedBoard();
+    const boardState = board.getState();
+    const response = {
+	boardState,
+	board: obfuscatedBoard
     }
     return response
 }
