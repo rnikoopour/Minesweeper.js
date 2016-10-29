@@ -15,7 +15,8 @@ function createCell(row, col) {
 	col,
 	isMine: false,
 	touching: -1,
-	isRevealed: false
+	isRevealed: false,
+	isFlagged: false
     };
 }
 
@@ -120,9 +121,14 @@ function countTouching(cell) {
     return touching;
 }
 
+function toggleCellFlag(row, col) {
+    let cell = board[row] && board[row][col];
+    if (cell) cell.isFlagged = !cell.isFlagged;
+}
+
 function revealCell(row, col) {
     let cell = board[row] && board[row][col];
-    if (cell && !cell.isRevealed) {
+    if (cell && !cell.isRevealed && !cell.isFlagged) {
 	cell.isRevealed = true;
 	let topRow = cell.row - 1;
 	let middleRow = cell.row;
@@ -148,8 +154,6 @@ function revealCell(row, col) {
 	    revealCell(bottomRow, rightCol);
 	}
 
-	console.log(cell);
-
 	if (cell.isMine) boardInfo.state = CONSTS.BOARDSTATES.LOST;
 	if (cell.touching == 0) {
 	    revealTopRow();
@@ -167,7 +171,8 @@ function display() {
 		if (cell.isMine) curRow += 'M';
 		else curRow += cell.touching;
 	    } else {
-		curRow += '?'
+		if (cell.isFlagged) curRow += 'F';
+		else curRow += '?';
 	    }
 	});
 	console.log(curRow);
@@ -183,7 +188,8 @@ function getObfuscatedBoard() {
 		if (cell.isMine) curRow.push('M');
 		else curRow.push(cell.touching);
 	    } else {
-		curRow.push('?');
+		if (cell.isFlagged) curRow.push('F');
+		else curRow.push('?');
 	    }
 	});
 	obfuscatedBoard.push(curRow);
@@ -218,6 +224,7 @@ module.exports = {
     display,
     revealCell,
     getObfuscatedBoard,
+    toggleCellFlag,
     getState
 }
 
