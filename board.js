@@ -118,44 +118,39 @@ function countTouching(cell) {
     return touching;
 }
 
-function toggleCellFlag(row, col) {
+function toggleCellFlag({row, col}) {
     let cell = board[row] && board[row][col];
     if (cell) cell.isFlagged = !cell.isFlagged;
 }
 
-function revealCell(row, col) {
+function revealCell({row, col}) {
     let cell = board[row] && board[row][col];
     if (cell && !cell.isRevealed && !cell.isFlagged) {
 	cell.isRevealed = true;
-	let topRow = cell.row - 1;
-	let middleRow = cell.row;
-	let bottomRow = cell.row + 1;
-	let leftCol = cell.col - 1;
-	let middleCol = cell.col;
-	let rightCol = cell.col + 1;
+	const topRow = cell.row - 1;
+	const middleRow = cell.row;
+	const bottomRow = cell.row + 1;
 
-	function revealTopRow() {
-	    revealCell(topRow, leftCol);
-	    revealCell(topRow, middleCol);
-	    revealCell(topRow, rightCol);
-	}
+	function revealRow(row) {
+	    const leftCol = cell.col - 1;
+	    const middleCol = cell.col;
+	    const rightCol = cell.col + 1;
 
-	function revealMiddleRow() {
-	    revealCell(middleRow, leftCol);
-	    revealCell(middleRow, rightCol);
-	}
-
-	function revealBottomRow() {
-	    revealCell(bottomRow, leftCol);
-	    revealCell(bottomRow, middleCol);
-	    revealCell(bottomRow, rightCol);
+	    let col = leftCol;
+	    revealCell({row, col});
+	    if (row != middleRow) {
+		col = middleCol;
+		revealCell({row, col});
+	    }
+	    col = rightCol;
+	    revealCell({row, col});
 	}
 
 	if (cell.isMine) boardInfo.state = CONSTS.BOARDSTATES.LOST;
 	if (cell.touching == 0) {
-	    revealTopRow();
-	    revealMiddleRow();
-	    revealBottomRow();
+	    revealRow(topRow);
+	    revealRow(middleRow);
+	    revealRow(bottomRow);
 	}
     }
 }
